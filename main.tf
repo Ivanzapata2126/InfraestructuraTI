@@ -7,6 +7,11 @@ resource "aws_subnet" "example" {
   cidr_block = "10.0.1.0/24"
 }
 
+variable "imagebuild" {
+  type = string
+  description = "the latest image build version"
+}
+
 resource "aws_security_group" "example" {
   name        = "example"
   description = "Example security group"
