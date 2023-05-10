@@ -7,6 +7,11 @@ terraform {
   }
 }
 
+variable "imagebuild" {
+  type = string
+  description = "the latest image build version"
+}
+
 provider "aws" {
   region = "us-east-1"
 }
@@ -14,6 +19,7 @@ provider "aws" {
 resource "aws_ecs_cluster" "utbapp" {
   name = "utbapp"
 }
+
 
 resource "aws_ecs_task_definition" "utbapp" {
   family                   = "utbapp"
