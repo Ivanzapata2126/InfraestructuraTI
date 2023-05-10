@@ -1,25 +1,28 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 3.0"
-    }
+resource "aws_vpc" "example" {
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "aws_subnet" "example" {
+  vpc_id     = aws_vpc.example.id
+  cidr_block = "10.0.1.0/24"
+}
+
+resource "aws_security_group" "example" {
+  name        = "example"
+  description = "Example security group"
+  vpc_id      = aws_vpc.example.id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
-}
-
-variable "imagebuild" {
-  type = string
-  description = "the latest image build version"
-}
-
-provider "aws" {
-  region = "us-east-1"
 }
 
 resource "aws_ecs_cluster" "utbapp" {
   name = "utbapp"
 }
-
 
 resource "aws_ecs_task_definition" "utbapp" {
   family                   = "utbapp"
