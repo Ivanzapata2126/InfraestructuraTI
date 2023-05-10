@@ -1,0 +1,54 @@
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- main
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+
+# Azure DevOps works as hierarchy
+stages: # step 1
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build # step 2
+    displayName: Build
+    pool:
+      vmImage: ubuntu-latest
+      #name: Default
+    steps: # step 3
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'Docker Hub'
+        repository: 'ivanzapata2126/utbapp'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: |
+          $(tag)
+- stage: Provision
+  displayName: 'Creating terraform on Azure'
+  dependsOn: Build
+  jobs:
+    - job : provision
+      displayName: 'Provision container instance'
+      pool:
+        vmImage: ubuntu-latest
+        #name: Default
+      steps:
+        - script: |
+            set -e 
+
+            terraform init -input=false
+            terraform apply -input=false -auto-approve
+          name: 'RunTerraform'
+          displayName: 'Run Terraform'
+          env: # these vars are being passed from our SampleAPIVariables that we specified in Azure DevOps
+            AWS_REGION: "us-east-1"
+            AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+            AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+            TF_VAR_imagebuild: $(tag)
