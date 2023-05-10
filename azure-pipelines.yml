@@ -24,7 +24,7 @@ stages: # step 1
     steps: # step 3
     - task: Docker@2
       inputs:
-        containerRegistry: 'Docker Hub'
+        containerRegistry: 'docker'
         repository: 'ivanzapata2126/utbapp'
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
