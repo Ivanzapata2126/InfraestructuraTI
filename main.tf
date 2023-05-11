@@ -58,11 +58,11 @@ resource "aws_lb" "example" {
   load_balancer_type = "application"
 
   subnet_mapping {
-    subnet_id = aws_subnet.example.id
+    subnet_id = aws_subnet.example2.id
   }
 
   subnet_mapping {
-    subnet_id = aws_subnet.example2.id
+    subnet_id = aws_subnet.example3.id
   }
 
   security_groups = [
