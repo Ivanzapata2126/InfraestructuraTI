@@ -17,18 +17,6 @@ resource "aws_default_subnet" "default_subnet_c" {
   availability_zone = "eu-west-2c"
 }
 
-
-resource "aws_internet_gateway" "example" {
-  vpc_id = aws_vpc.example.id
-
-  tags = {
-    Name = "example-igw"
-  }
-}
-
-
-
-
 resource "aws_security_group" "example" {
   ingress {
     from_port   = 80 # Allowing traffic in from port 80
