@@ -87,15 +87,6 @@ resource "aws_lb" "example" {
   depends_on = [
     aws_lb_target_group.example,
   ]
-
-  listener {
-    port     = 80
-    protocol = "HTTP"
-
-    default_action {
-      target_group_arn = aws_lb_target_group.example.arn
-      type             = "forward"
-    }
   }
 }
 
@@ -119,20 +110,6 @@ resource "aws_lb_target_group" "example" {
   }
 }
 
-data "aws_caller_identity" "current" {}
-
-output "aws_region" {
-  value = data.aws_caller_identity.current.region
-}
-
-output "aws_account_id" {
-  value = data.aws_caller_identity.current.account_id
-}
-
-output "ecs_cluster_arn" {
-  value = aws_ecs_cluster.utbapp.arn
-}
-
 output "app_url" {
-  value = "http://${aws_lb.load_balancer[0].dns_name}/${aws_lb_target_group.example.target_type}/${aws_lb_target_group.example.name}/${aws_lb_target_group.example.port}"
+  value = "http://${aws_lb.example.load_balancer[0].dns_name}/${aws_lb_target_group.example.target_type}/${aws_lb_target_group.example.name}/${aws_lb_target_group.example.port}"
 }
