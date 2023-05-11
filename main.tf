@@ -64,14 +64,18 @@ resource "aws_route_table_association" "b" {
 }
 
 resource "aws_security_group" "example" {
-  name_prefix = "example"
-  vpc_id      = aws_vpc.example.id
-
   ingress {
-    from_port   = 80
+    from_port   = 80 # Allowing traffic in from port 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] # Allowing traffic in from all sources
+  }
+
+  egress {
+    from_port   = 0 # Allowing any incoming port
+    to_port     = 0 # Allowing any outgoing port
+    protocol    = "-1" # Allowing any outgoing protocol 
+    cidr_blocks = ["0.0.0.0/0"] # Allowing traffic out to all IP addresses
   }
 }
 resource "aws_ecs_cluster" "utbapp" {
@@ -95,9 +99,8 @@ resource "aws_ecs_task_definition" "utbapp" {
     image     = "ivanzapata2126/utbapp:${var.imagebuild}"
     essential = true
     portMappings = [{
-      containerPort = 80
-      hostPort      = 80
-      protocol      = "tcp"
+      containerPort = 3000
+      hostPort      = 3000
     }]
   }])
 }
@@ -106,15 +109,38 @@ resource "aws_ecs_service" "utbapp" {
   name            = "utbapp"
   cluster         = aws_ecs_cluster.utbapp.id
   task_definition = aws_ecs_task_definition.utbapp.arn
-  desired_count   = 1
+  desired_count   = 3
 
   network_configuration {
     subnets         = [aws_subnet.example.id]
-    security_groups = [aws_security_group.example.id]
+    security_groups  = [aws_security_group.service_security_group.id]
     assign_public_ip = true
   }
 
+  load_balancer {
+    target_group_arn = aws_lb_target_group.example.arn
+    container_name   = aws_ecs_task_definition.utbapp.family
+    container_port   = 3000
+  }
+
   launch_type     = "FARGATE"
+}
+
+resource "aws_security_group" "service_security_group" {
+  ingress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    # Only allowing traffic in from the load balancer security group
+    security_groups = ["${aws_security_group.load_balancer_security_group.id}"]
+  }
+
+  egress {
+    from_port   = 0 # Allowing any incoming port
+    to_port     = 0 # Allowing any outgoing port
+    protocol    = "-1" # Allowing any outgoing protocol 
+    cidr_blocks = ["0.0.0.0/0"] # Allowing traffic out to all IP addresses
+  }
 }
 
 resource "aws_lb_target_group" "example" {
@@ -125,9 +151,18 @@ resource "aws_lb_target_group" "example" {
   vpc_id      = aws_vpc.example.id
 }
 
+resource "aws_lb_listener" "listener" {
+  load_balancer_arn = aws_lb.example.arn
+  port              = "80"
+  protocol          = "HTTP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.example.arn
+  }
+}
+
 resource "aws_lb" "example" {
   name               = "example-lb"
-  internal           = false
   load_balancer_type = "application"
 
   subnet_mapping {
