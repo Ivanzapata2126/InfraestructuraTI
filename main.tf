@@ -54,14 +54,25 @@ resource "aws_lb_listener" "example" {
 }
 
 resource "aws_lb" "example" {
-  name               = "example"
+  name               = "example-lb"
+  internal           = false
   load_balancer_type = "application"
-  subnets            = [aws_subnet.example.id]
-
-  tags = {
-    Name = "example"
-  }
+  security_groups    = [aws_security_group.sg_example.id]
+  subnets            = [aws_subnet.example1.id, aws_subnet.example2.id]
 }
+
+resource "aws_subnet" "example2" {
+  vpc_id            = aws_vpc.example.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "us-west-2a"
+}
+
+resource "aws_subnet" "example3" {
+  vpc_id            = aws_vpc.example.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "us-west-2b"
+}
+
 
 resource "aws_ecs_cluster" "utbapp" {
   name = "utbapp"
