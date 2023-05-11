@@ -41,10 +41,11 @@ resource "aws_subnet" "example" {
   tags = {
     Name = "example-subnet"
   }
-  route_table_association {
-    route_table_id = aws_route_table.example.id
-    subnet_id = aws_subnet.example.id
-  }
+}
+
+resource "aws_route_table_association" "a" {
+  subnet_id      = aws_subnet.example.id
+  route_table_id = aws_route_table.example.id
 }
 
 resource "aws_subnet" "example2" {
@@ -55,11 +56,11 @@ resource "aws_subnet" "example2" {
   tags = {
     Name = "example-subnet-2"
   }
-  route_table_association {
-    route_table_id = aws_route_table.example.id
-    subnet_id = aws_subnet.example2.id
-  }
+}
 
+resource "aws_route_table_association" "b" {
+  subnet_id      = aws_subnet.example2.id
+  route_table_id = aws_route_table.example.id
 }
 
 resource "aws_security_group" "example" {
