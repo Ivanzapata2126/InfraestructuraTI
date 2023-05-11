@@ -45,7 +45,7 @@ resource "aws_security_group" "example" {
 }
 
 resource "aws_lb_target_group" "example" {
-  name_prefix = "example"
+  name_prefix = "ele"
   port        = 80
   protocol    = "HTTP"
   target_type = "ip"
@@ -68,16 +68,6 @@ resource "aws_lb" "example" {
   security_groups = [
     aws_security_group.example.id,
   ]
-
-  listener {
-    port     = 80
-    protocol = "HTTP"
-
-    default_action {
-      target_group_arn = aws_lb_target_group.example.arn
-      type             = "forward"
-    }
-  }
 }
 
 output "app_url" {
