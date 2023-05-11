@@ -87,7 +87,6 @@ resource "aws_lb" "example" {
   depends_on = [
     aws_lb_target_group.example,
   ]
-  }
 }
 
 resource "aws_lb_target_group" "example" {
