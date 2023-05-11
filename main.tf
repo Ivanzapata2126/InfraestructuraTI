@@ -1,3 +1,9 @@
+provider "aws" {
+  region = "us-west-2"
+}
+
+data "aws_caller_identity" "current" {}
+
 resource "aws_vpc" "example" {
   cidr_block = "10.0.0.0/16"
 }
@@ -8,7 +14,7 @@ resource "aws_subnet" "example" {
 }
 
 variable "imagebuild" {
-  type = string
+  type        = string
   description = "the latest image build version"
 }
 
@@ -22,6 +28,38 @@ resource "aws_security_group" "example" {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_lb_target_group" "example" {
+  name_prefix = "example"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.example.id
+
+  health_check {
+    path = "/"
+  }
+}
+
+resource "aws_lb_listener" "example" {
+  load_balancer_arn = aws_lb.example.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = aws_lb_target_group.example.arn
+    type             = "forward"
+  }
+}
+
+resource "aws_lb" "example" {
+  name               = "example"
+  load_balancer_type = "application"
+  subnets            = [aws_subnet.example.id]
+
+  tags = {
+    Name = "example"
   }
 }
 
@@ -63,52 +101,6 @@ resource "aws_ecs_service" "utbapp" {
   launch_type     = "FARGATE"
 }
 
-data "aws_lb_target_group" "tg" {
-  arn = aws_lb_target_group.example.arn
-}
-
-resource "aws_lb" "example" {
-  name               = "example-lb"
-  internal           = false
-  load_balancer_type = "application"
-
-  subnets         = aws_subnet.example.*.id
-  security_groups = [aws_security_group.example.id]
-
-  access_logs {
-    bucket  = "example-lb-logs"
-    enabled = true
-  }
-
-  lifecycle {
-    create_before_destroy = true
-  }
-
-  depends_on = [
-    aws_lb_target_group.example,
-  ]
-}
-
-resource "aws_lb_target_group" "example" {
-  name        = "example-tg"
-  port        = 80
-  protocol    = "HTTP"
-  target_type = "ip"
-
-  vpc_id = aws_vpc.example.id
-
-  health_check {
-    enabled             = true
-    interval            = 10
-    path                = "/"
-    port                = "traffic-port"
-    protocol            = "HTTP"
-    timeout             = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-  }
-}
-
 output "app_url" {
-  value = "http://${aws_lb.example.load_balancer[0].dns_name}/${aws_lb_target_group.example.target_type}/${aws_lb_target_group.example.name}/${aws_lb_target_group.example.port}"
+  value = "http://${aws_lb.example.dns_name}/${aws_lb_target_group.example.target_type}/${aws_lb_target_group.example.name}/${aws_lb_target_group.example.port}"
 }
