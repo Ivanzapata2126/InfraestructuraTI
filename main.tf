@@ -71,15 +71,26 @@ resource "aws_lb" "example" {
   name               = "example-lb"
   internal           = false
   load_balancer_type = "application"
-  subnets            = [aws_subnet.example.id]
 
-  tags = {
-    Name = "example-lb"
+  subnets         = aws_subnet.example.*.id
+  security_groups = [aws_security_group.example.id]
+
+  access_logs {
+    bucket  = "example-lb-logs"
+    enabled = true
   }
 
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  depends_on = [
+    aws_lb_target_group.example,
+  ]
+
   listener {
+    port     = 80
     protocol = "HTTP"
-    port     = "80"
 
     default_action {
       target_group_arn = aws_lb_target_group.example.arn
@@ -94,22 +105,34 @@ resource "aws_lb_target_group" "example" {
   protocol    = "HTTP"
   target_type = "ip"
 
+  vpc_id = aws_vpc.example.id
+
   health_check {
-    healthy_threshold   = 2
-    interval            = 30
-    matcher             = "200"
+    enabled             = true
+    interval            = 10
     path                = "/"
     port                = "traffic-port"
     protocol            = "HTTP"
     timeout             = 5
+    healthy_threshold   = 2
     unhealthy_threshold = 2
-  }
-
-  tags = {
-    Name = "example-tg"
   }
 }
 
+data "aws_caller_identity" "current" {}
+
+output "aws_region" {
+  value = data.aws_caller_identity.current.region
+}
+
+output "aws_account_id" {
+  value = data.aws_caller_identity.current.account_id
+}
+
+output "ecs_cluster_arn" {
+  value = aws_ecs_cluster.utbapp.arn
+}
+
 output "app_url" {
-  value = "http://${aws_lb.load_balancer[*].dns_name[0]}/${data.aws_lb_target_group.tg.target_type}/${aws_lb_target_group.example.name}/${aws_lb_target_group.example.port}"
+  value = "http://${aws_lb.load_balancer[0].dns_name}/${aws_lb_target_group.example.target_type}/${aws_lb_target_group.example.name}/${aws_lb_target_group.example.port}"
 }
