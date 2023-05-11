@@ -8,9 +8,11 @@ resource "aws_subnet" "example" {
 }
 
 variable "imagebuild" {
-  type = string
+  type        = string
   description = "the latest image build version"
+  default     = "latest"
 }
+
 
 resource "aws_security_group" "example" {
   name        = "example"
@@ -48,6 +50,22 @@ resource "aws_ecs_task_definition" "utbapp" {
   }])
 }
 
+resource "aws_lb_target_group" "example" {
+  name     = "example"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.example.id
+
+  health_check {
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout_seconds     = 5
+    interval_seconds    = 10
+    path                = "/"
+  }
+}
+
+
 resource "aws_ecs_service" "utbapp" {
   name            = "utbapp"
   cluster         = aws_ecs_cluster.utbapp.id
@@ -61,4 +79,30 @@ resource "aws_ecs_service" "utbapp" {
   }
 
   launch_type     = "FARGATE"
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.example.arn
+    container_name   = "utbapp"
+    container_port   = 80
+  }
+}
+
+resource "aws_lb" "example" {
+  name               = "example"
+  internal           = false
+
+  listener {
+    port     = 80
+    protocol = "HTTP"
+
+    default_action {
+      type             = "forward"
+      target_group_arn = aws_lb_target_group.example.arn
+    }
+  }
+}
+
+
+output "app_url" {
+  value = "http://${aws_ecs_service.utbapp.load_balancer[0].dns_name}"
 }
