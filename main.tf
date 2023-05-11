@@ -51,19 +51,15 @@ resource "aws_ecs_task_definition" "utbapp" {
 }
 
 resource "aws_lb_target_group" "example" {
-  name     = "example"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.example.id
-
-  health_check {
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    timeout_seconds     = 5
-    interval_seconds    = 10
-    path                = "/"
-  }
+  name_prefix        = "example"
+  port               = 80
+  protocol           = "HTTP"
+  vpc_id             = aws_vpc.example.id
+  target_type        = "ip"
+  target_timeout     = 5
+  health_check_interval_seconds = 10
 }
+
 
 
 resource "aws_ecs_service" "utbapp" {
@@ -92,8 +88,8 @@ resource "aws_lb" "example" {
   internal           = false
 
   listener {
-    port     = 80
     protocol = "HTTP"
+    port     = "80"
 
     default_action {
       type             = "forward"
@@ -101,6 +97,7 @@ resource "aws_lb" "example" {
     }
   }
 }
+
 
 
 output "app_url" {
