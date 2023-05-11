@@ -78,6 +78,11 @@ resource "aws_ecs_cluster" "utbapp" {
   name = "utbapp"
 }
 
+variable "imagebuild" {
+  type = string
+  description = "the latest image build version"
+}
+
 resource "aws_ecs_task_definition" "utbapp" {
   family                   = "utbapp"
   network_mode             = "awsvpc"
