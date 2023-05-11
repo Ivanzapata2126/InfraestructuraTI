@@ -58,7 +58,7 @@ resource "aws_lb" "example" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.example.id]
-  subnets            = [aws_subnet.example1.id, aws_subnet.example2.id]
+  subnets            = [aws_subnet.example2.id, aws_subnet.example3.id]
 }
 
 resource "aws_subnet" "example2" {
