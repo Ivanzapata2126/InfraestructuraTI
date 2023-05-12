@@ -146,10 +146,5 @@ resource "aws_ecs_service" "utbapp" {
     container_name   = aws_ecs_task_definition.utbapp.family
     container_port   = 3000
   }
-
   launch_type     = "FARGATE"
-}
-
-output "app_url" {
-  value = "http://${aws_lb.example.dns_name}/${aws_lb_target_group.example.target_type}/${aws_lb_target_group.example.name}/${aws_lb_target_group.example.port}"
 }
