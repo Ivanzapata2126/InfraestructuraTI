@@ -26,15 +26,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Create Amazon ECR Repository
-        id: create-ecr-repo
-        uses: aws-actions/amazon-ecr-create-repository@v1
-        with:
-          repository-name: "Grupo02"
-          region: ${{ env.AWS_REGION }}
-
-      - name: Store ECR repository URL in environment variable
-        run: echo "export ECR_REPOSITORY=${{ steps.create-ecr-repo.outputs.repository-url }}" >> $GITHUB_ENV
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -69,4 +60,4 @@ jobs:
         run: |
           cd .
           terraform plan -var="ecr_repository_name=${ECR_REPOSITORY_NAME}"
-          terraform apply -var="ecr_repository_name=${ECR_REPOSITORY_NAME}" -auto-approve
+          terraform apply -var="ecr_repository_name=393450248593.dkr.ecr.us-west-2.amazonaws.com/grupo02" -auto-approve

@@ -50,7 +50,7 @@ resource "aws_ecs_task_definition" "utbapp" {
 
   container_definitions = jsonencode([{
     name      = "utbapp"
-    image     = ECR_REPOSITORY_NAME
+    image     = ecr_repository_name
     essential = true
     portMappings = [{
       containerPort = 3000
