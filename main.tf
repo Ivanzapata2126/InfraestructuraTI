@@ -79,7 +79,7 @@ resource "aws_ecs_task_definition" "utbapp" {
 
 
   container_definitions = jsonencode([{
-    name      = "utbapp"
+    name      = "nuevo"
     image     = "393450248593.dkr.ecr.us-west-2.amazonaws.com/grupo02:111dc73e31e2ee4929ab9e38cfe809d50163dfc3"
     essential = true
     portMappings = [{
