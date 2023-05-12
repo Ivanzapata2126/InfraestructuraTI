@@ -41,7 +41,7 @@ variable "imagebuild" {
   description = "the latest image build version"
 }
 resource "aws_iam_role" "ecsTaskExecutionRol" {
-  name               = "ecsTaskExecutionRole"
+  name_prefix               = "ecs"
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
 }
 
