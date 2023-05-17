@@ -1,4 +1,9 @@
 terraform {
+  backend "s3" {
+    bucket = "terraformgrupo02state"
+    key    = "terraform.tfstate"
+    region = "us-west-2"
+  }
   required_providers {
     docker = {
       source    = "kreuzwerker/docker"
@@ -49,7 +54,7 @@ resource "aws_ecs_task_definition" "my_first_task" {
   [
     {
       "name": "ACTVIDAD1${var.imagebuild}",
-      "image": "ivanzapata2126/utbapp:${var.imagebuild}",
+      "image": "andersonmorillo31/actividad1corte3:${var.imagebuild}",
       "essential": true,
       "portMappings": [
         {
@@ -71,7 +76,7 @@ resource "aws_ecs_task_definition" "my_first_task" {
 }
 
 resource "aws_iam_role" "ecsTaskExecutionRole" {
-  name               = "ecsTaskExecutionRole${var.imagebuild}"
+  name               = "ecsTaskExecutionRole1${var.imagebuild}"
   assume_role_policy = "${data.aws_iam_policy_document.assume_role_policy.json}"
 }
 
